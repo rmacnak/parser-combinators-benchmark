@@ -141,10 +141,7 @@ abstract class CombinatorialParser {
 class CharacterRangeParser extends CombinatorialParser {
   String lowerBound;
   String upperBound;
-  CharacterRangeParser(String p, String q) {
-    lowerBound = p;
-    upperBound = q;
-  }
+  CharacterRangeParser(this.lowerBound, this.upperBound);
   Object parseWithContext(ParserContext ctxt) {
     if (!ctxt.atEnd()) {
       String c = ctxt.next();
@@ -162,9 +159,7 @@ class CharacterRangeParser extends CombinatorialParser {
 
 class SequencingParser extends CombinatorialParser {
   List<CombinatorialParser> subparsers;
-  SequencingParser(List<CombinatorialParser> subparsers) {
-    this.subparsers = subparsers;
-  }
+  SequencingParser(this.subparsers);
   CombinatorialParser then(CombinatorialParser p) {
     var l = new List<CombinatorialParser>(subparsers.length + 1);
     for(int i = 0; i < subparsers.length; i++) {
@@ -195,10 +190,7 @@ class SequencingParser extends CombinatorialParser {
 
 class AlternatingParser extends CombinatorialParser {
   CombinatorialParser p, q;
-  AlternatingParser(CombinatorialParser p, CombinatorialParser q) {
-    this.p = p;
-    this.q = q;
-  }
+  AlternatingParser(this.p, this.q);
   Object parseWithContext(ParserContext ctxt) {
     int pos = ctxt.position;
     try {
@@ -222,9 +214,7 @@ class AlternatingParser extends CombinatorialParser {
 
 class StarParser extends CombinatorialParser {
   CombinatorialParser subparser;
-  StarParser(CombinatorialParser p) {
-    this.subparser = p;
-  }
+  StarParser(this.subparser);
   Object parseWithContext(ParserContext ctxt) {
     List results = new List();
     for (;;) {
@@ -264,10 +254,7 @@ class EOIParser extends CombinatorialParser {
 class WrappingParser extends CombinatorialParser {
   CombinatorialParser subparser;
   Function transform;
-  WrappingParser(CombinatorialParser p, Function t){
-    this.subparser = p;
-    this.transform = t;
-  }
+  WrappingParser(this.subparser, this.transform);
   Object parseWithContext(ParserContext ctxt) {
     return transform(subparser.parseWithContext(ctxt));
   }
