@@ -6,7 +6,7 @@ NLRs to a language without them also uses exceptions in this way.
 
 These parser combinators use explicitly initialized forward reference parsers
 to handle cycles in the productions, rather than using reflection or 
-#doesNotUnderstand:, to make the benchmark portable to languages lacking
+doesNotUnderstand:, to make the benchmark portable to languages lacking
 these features and to avoid measuring their performance. They also do not use
 any platform-defined streams to avoid API differences.  Arithmetic operations
 are masked to keep all intermediate results within Smi range.
