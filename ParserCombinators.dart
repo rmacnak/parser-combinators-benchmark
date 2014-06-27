@@ -223,7 +223,7 @@ class StarParser extends CombinatorialParser {
         results.add(subparser.parseWithContext(ctxt));
       } catch(e) {
         ctxt.position = pos;
-        return results.toList(growable:false);
+        return results;
       }
     }
   }
