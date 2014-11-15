@@ -6,7 +6,7 @@
  * NLRs to a language without them also uses exceptions in this way.
  *
  * These parser combinators use explicitly initialized forward reference parsers
- * to handle cycles in the productions, rather than using reflection or 
+ * to handle cycles in the productions, rather than using reflection or
  * #doesNotUnderstand:, to make the benchmark portable to languages lacking
  * these features and to avoid measuring their performance. They also do not use
  * any platform-defined streams to avoid API differences.  Arithmetic operations
@@ -53,7 +53,7 @@ public class ParserCombinators {
       runs++;
       duration = System.currentTimeMillis() - startTime;
     } while(duration < 10000);
-    
+
     System.out.println("ParserCombinators: " +
                        (runs*1000.0/duration) +
                        " runs/sec");
@@ -110,7 +110,10 @@ interface Transform {
 }
 
 
-class ParserError extends RuntimeException {  
+class ParserError extends RuntimeException {
+  public Throwable fillInStackTrace() {
+    return this;
+  }
 }
 
 
@@ -319,23 +322,23 @@ class SimpleExpressionGrammar extends CombinatorialParser {
   CombinatorialParser exp = new ForwardReferenceParser();
   CombinatorialParser e1 = new ForwardReferenceParser();
   CombinatorialParser e2 = new ForwardReferenceParser();
-  
+
   CombinatorialParser parenExp = new ForwardReferenceParser();
   CombinatorialParser number = new ForwardReferenceParser();
-  
+
   CombinatorialParser plus = new ForwardReferenceParser();
   CombinatorialParser times = new ForwardReferenceParser();
   CombinatorialParser digit = new ForwardReferenceParser();
   CombinatorialParser lparen = new ForwardReferenceParser();
   CombinatorialParser rparen = new ForwardReferenceParser();
-  
+
   SimpleExpressionGrammar() {
     start.bind(exp.then(eoi()).wrap(
         new Transform() { public Object transform(Object o) {
           return ((Object[])o)[0];
         }}
     ));
-    
+
     exp.bind(e1.then(plus.then(e1).star()).wrap(
         new Transform() { public Object transform(Object o) {
           long lhs = (Long)(((Object[])o)[0]);
@@ -346,7 +349,7 @@ class SimpleExpressionGrammar extends CombinatorialParser {
           return lhs;
         }}
     ));
-    
+
     e1.bind(e2.then(times.then(e2).star()).wrap(
         new Transform() { public Object transform(Object o) {
           long lhs = (Long)(((Object[])o)[0]);
@@ -357,21 +360,21 @@ class SimpleExpressionGrammar extends CombinatorialParser {
           return lhs;
         }}
     ));
-    
+
     e2.bind(number.or(parenExp));
-    
+
     parenExp.bind(lparen.then(exp).then(rparen).wrap(
         new Transform() { public Object transform(Object o) {
           return ((Object[])o)[1];
         }}
     ));
-    
+
     number.bind(digit.wrap(
        new Transform() { public Object transform(Object o) {
          return (long)Character.getNumericValue((Character)o);
        }}
     ));
-    
+
     plus.bind(character('+'));
     times.bind(character('*'));
     digit.bind(characterRange('0','9'));
