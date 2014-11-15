@@ -67,7 +67,7 @@ function nextRandom() {
   return seed;
 }
 function randomExpression(depth) {
-  if (depth<1) {
+  if (depth < 1) {
     return (nextRandom() % 10).toString();
   }
   switch (nextRandom() % 3) {
@@ -275,13 +275,13 @@ function WrappingParser(p,t) {
 }
 WrappingParser.inheritsFrom(CombinatorialParser);
 WrappingParser.prototype.parseWithContext = function(ctxt) {
-    return this.transform(this.subparser.parseWithContext(ctxt));
+  return this.transform(this.subparser.parseWithContext(ctxt));
 }
 WrappingParser.prototype.compress = function() {
-    if(this.compressed) return this;
-    this.compressed = true;
-    this.subparser = this.subparser.compress();
-    return this;
+  if (this.compressed) return this;
+  this.compressed = true;
+  this.subparser = this.subparser.compress();
+  return this;
 }
 
 
@@ -326,33 +326,33 @@ function SimpleExpressionGrammar() {
   ));
 
   this.exp.bind(this.e1.then(this.plus.then(this.e1).star()).wrap(
-      function (o) {
-        var lhs = o[0];
-        var rhss = o[1];
-        for (var i = 0; i < rhss.length; i++) {
-          lhs = (lhs + rhss[i][1]) % 0xFFFF;
-        }
-        return lhs;
+    function (o) {
+      var lhs = o[0];
+      var rhss = o[1];
+      for (var i = 0; i < rhss.length; i++) {
+        lhs = (lhs + rhss[i][1]) % 0xFFFF;
       }
+      return lhs;
+    }
   ));
 
   this.e1.bind(this.e2.then(this.times.then(this.e2).star()).wrap(
-      function (o) {
-        var lhs = o[0];
-        var rhss = o[1];
-        for (var i = 0; i < rhss.length; i++) {
-          lhs = (lhs * rhss[i][1]) % 0xFFFF;
-        }
-        return lhs;
+    function (o) {
+      var lhs = o[0];
+      var rhss = o[1];
+      for (var i = 0; i < rhss.length; i++) {
+        lhs = (lhs * rhss[i][1]) % 0xFFFF;
       }
+      return lhs;
+    }
   ));
 
   this.e2.bind(this.number.or(this.parenExp));
 
   this.parenExp.bind( this.lparen.then(this.exp).then(this.rparen).wrap(
-      function (o) {
-        return o[1];
-      }
+    function (o) {
+      return o[1];
+    }
   ));
 
   this.number.bind(this.digit.wrap(function(o) { return parseInt(o); }));

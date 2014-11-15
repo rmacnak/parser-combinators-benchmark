@@ -28,10 +28,10 @@ main() {
   CombinatorialParser parser = new SimpleExpressionGrammar().start.compress();
 
   String theExpression = randomExpression(20);
-  if (theExpression.length!=41137) {
+  if (theExpression.length != 41137) {
     throw "Generated expression of the wrong size";
   }
-  if (parser.parseWithContext(new ParserContext(theExpression)) != 31615){
+  if (parser.parseWithContext(new ParserContext(theExpression)) != 31615) {
     throw "Expression evaluated to wrong value";
   }
 
@@ -62,7 +62,7 @@ int nextRandom() {
   return seed;
 }
 String randomExpression(int depth) {
-  if (depth<1) {
+  if (depth < 1) {
   	return (nextRandom() % 10).toString();
   }
   switch (nextRandom() % 3) {
@@ -87,18 +87,21 @@ class ParserContext {
   get position {
     return _pos;
   }
-  set position(int p){
+  set position(int p) {
     _pos = p;
   }
-  String next(){
+  String next() {
     return _content[_pos++];
   }
-  bool atEnd(){
+  bool atEnd() {
     return _pos >= _content.length;
   }
 }
 
 
+// Don't subclass Error to prevent automatic collection of stack traces, which
+// has a significant cost. This benchmark is about the use of exceptions for
+// non-local control flow, not error tracking.
 class ParserError {
 }
 
@@ -118,10 +121,10 @@ abstract class CombinatorialParser {
     return new SequencingParser([this, p]);
   }
   CombinatorialParser character(String c) {
-    return new CharacterRangeParser(c,c);
+    return new CharacterRangeParser(c, c);
   }
   CombinatorialParser characterRange(String p, String q) {
-    return new CharacterRangeParser(p,q);
+    return new CharacterRangeParser(p, q);
   }
   CombinatorialParser eoi() {
     return new EOIParser();
@@ -170,7 +173,7 @@ class SequencingParser extends CombinatorialParser {
   }
   Object parseWithContext(ParserContext ctxt) {
   	List results = new List(subparsers.length);
-    for (int i=0; i<subparsers.length; i++) {
+    for (int i = 0; i < subparsers.length; i++) {
       results[i] = subparsers[i].parseWithContext(ctxt);
     }
     return results;
@@ -310,7 +313,7 @@ class SimpleExpressionGrammar extends CombinatorialParser {
         List rhss = o[1];
         for (var i = 0; i < rhss.length; i++) {
           lhs = (lhs + rhss[i][1]) % 0xFFFF;
-         }
+        }
         return lhs;
       }
     ));
@@ -321,7 +324,7 @@ class SimpleExpressionGrammar extends CombinatorialParser {
         List rhss = o[1];
         for (var i = 0; i < rhss.length; i++) {
           lhs = (lhs * rhss[i][1]) % 0xFFFF;
-         }
+        }
         return lhs;
       }
     ));
@@ -334,7 +337,7 @@ class SimpleExpressionGrammar extends CombinatorialParser {
 
     plus.bind(character('+'));
     times.bind(character('*'));
-    digit.bind(characterRange('0','9'));
+    digit.bind(characterRange('0', '9'));
     lparen.bind(character('('));
     rparen.bind(character(')'));
   }

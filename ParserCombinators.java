@@ -67,10 +67,10 @@ public class ParserCombinators {
     return seed;
   }
   static String randomExpression(int depth) {
-    if (depth<1) {
-      return Integer.toString(nextRandom()%10);
+    if (depth < 1) {
+      return Integer.toString(nextRandom() % 10);
     }
-    switch ((int)(nextRandom()%3L)) {
+    switch ((int)(nextRandom() % 3)) {
       case 0:
           return randomExpression(depth-1) + "+" + randomExpression(depth-1);
       case 1:
@@ -111,6 +111,9 @@ interface Transform {
 
 
 class ParserError extends RuntimeException {
+  // Prevent collection of stack traces, which has a significant cost. This
+  // benchmark is about the use of exceptions for non-local control flow, not
+  // error tracking.
   public Throwable fillInStackTrace() {
     return this;
   }
@@ -192,7 +195,7 @@ class SequencingParser extends CombinatorialParser {
   }
   Object parseWithContext(ParserContext ctxt) {
     Object[] results = new Object[subparsers.length];
-    for (int i=0; i<subparsers.length; i++) {
+    for (int i = 0; i < subparsers.length; i++) {
       results[i] = subparsers[i].parseWithContext(ctxt);
     }
     return results;
@@ -334,50 +337,50 @@ class SimpleExpressionGrammar extends CombinatorialParser {
 
   SimpleExpressionGrammar() {
     start.bind(exp.then(eoi()).wrap(
-        new Transform() { public Object transform(Object o) {
-          return ((Object[])o)[0];
-        }}
+      new Transform() { public Object transform(Object o) {
+        return ((Object[])o)[0];
+      }}
     ));
 
     exp.bind(e1.then(plus.then(e1).star()).wrap(
-        new Transform() { public Object transform(Object o) {
-          long lhs = (Long)(((Object[])o)[0]);
-          Object rhss = ((Object[])o)[1];
-          for (Object rhs : (Object[])rhss) {
-            lhs = (lhs + ((Long)((Object[])rhs)[1])) % 0xFFFF;
-          }
-          return lhs;
-        }}
+      new Transform() { public Object transform(Object o) {
+        long lhs = (Long)(((Object[])o)[0]);
+        Object rhss = ((Object[])o)[1];
+        for (Object rhs : (Object[])rhss) {
+          lhs = (lhs + ((Long)((Object[])rhs)[1])) % 0xFFFF;
+        }
+        return lhs;
+      }}
     ));
 
     e1.bind(e2.then(times.then(e2).star()).wrap(
-        new Transform() { public Object transform(Object o) {
-          long lhs = (Long)(((Object[])o)[0]);
-          Object rhss = ((Object[])o)[1];
-          for (Object rhs : (Object[])rhss) {
-            lhs = (lhs * ((Long)((Object[])rhs)[1])) % 0xFFFF;
-          }
-          return lhs;
-        }}
+      new Transform() { public Object transform(Object o) {
+        long lhs = (Long)(((Object[])o)[0]);
+        Object rhss = ((Object[])o)[1];
+        for (Object rhs : (Object[])rhss) {
+          lhs = (lhs * ((Long)((Object[])rhs)[1])) % 0xFFFF;
+        }
+        return lhs;
+      }}
     ));
 
     e2.bind(number.or(parenExp));
 
     parenExp.bind(lparen.then(exp).then(rparen).wrap(
-        new Transform() { public Object transform(Object o) {
-          return ((Object[])o)[1];
-        }}
+      new Transform() { public Object transform(Object o) {
+        return ((Object[])o)[1];
+      }}
     ));
 
     number.bind(digit.wrap(
-       new Transform() { public Object transform(Object o) {
-         return (long)Character.getNumericValue((Character)o);
-       }}
+      new Transform() { public Object transform(Object o) {
+        return (long)Character.getNumericValue((Character)o);
+      }}
     ));
 
     plus.bind(character('+'));
     times.bind(character('*'));
-    digit.bind(characterRange('0','9'));
+    digit.bind(characterRange('0', '9'));
     lparen.bind(character('('));
     rparen.bind(character(')'));
   }
