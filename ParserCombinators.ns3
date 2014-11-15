@@ -29,165 +29,126 @@ List = p collections OrderedCollection.
 seed <Integer> ::= 16rCAFE.
 parser <CombinatorialParser> = SimpleExpressionGrammar new start compress.
 theExpression <String> = randomExpression: 20.
-|
-theExpression size = 41137 ifFalse:
+|theExpression size = 41137 ifFalse:
   [Error signal: 'Generated expression of the wrong size'].
 ((parser parseWithContext: (ParserContext over: theExpression) ifError: [parseFailed]) = 31615)
-  ifFalse: [Error signal: 'Expression evaluated to wrong value'].
-)
+  ifFalse: [Error signal: 'Expression evaluated to wrong value'])
 (
 class AlternatingParser either: p or: q = CombinatorialParser (|
 p <CombinatorialParser> ::= p.
 q <CombinatorialParser> ::= q.
 |)
 ('as yet unclassified'
-compress = (
+public compress = (
 	compressed ifTrue: [^self].
 	compressed: true.
 	p:: p compress.
 	q:: q compress.
 	^self
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	| pos = ctxt position. |
 	^p parseWithContext: ctxt ifError: [ctxt position: pos. ^q parseWithContext: ctxt ifError: onError]
-)
-
-) : (
-)
+)) : ()
 class CharacterRangeParser between: c1 and: c2 = CombinatorialParser (|
 lowerBound <Character> = c1.
 upperBound <Character> = c2.
 |)
 ('as yet unclassified'
-compress = (
+public compress = (
 	^self
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	| c |
 	ctxt atEnd ifTrue: [onError value].
 	c:: ctxt next.
 	(lowerBound <= c) & (c <= upperBound) ifTrue: [^c].
 	onError value.
-)
-
-) : (
-)
+)) : ()
 class CombinatorialParser = (|
 compressed <Boolean> ::= false.
 |)
 ('as yet unclassified'
-, p = (
+public , p = (
 	^SequencingParser subparsers: {self. p}
 )
-
 char: c = (
 	^CharacterRangeParser between: c and: c.
 )
-
 charBetween: c1 and: c2 = (
 	^CharacterRangeParser between: c1 and: c2.
 )
-
 eoi = (
 	^EOIParser new
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	subclassResponsibility
 )
-
-star = (
+public star = (
 	^StarParser repeat: self
 )
-
-wrapper: block = (
+public wrapper: block = (
 	^WrappingParser wrap: self with: block
 )
-
-| q = (
+public | q = (
 	^AlternatingParser either: self or: q
-)
-
-) : (
-)
+)) : ()
 class EOIParser = CombinatorialParser ()
 ('as yet unclassified'
-compress = (
+public compress = (
 	^self
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	ctxt atEnd ifTrue: [^nil].
 	onError value.
-)
-
-) : (
-)
+)) : ()
 class ForwardReferenceParser = CombinatorialParser (|
 forwardee <CombinatorialParser>
 |)
 ('as yet unclassified'
-bind: p = (
+public bind: p = (
 	forwardee isNil ifFalse: [Error signal: 'Forward reference parser already bound'].
 	forwardee:: p.
 )
-
-compress = (
+public compress = (
 	^forwardee compress
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	Error signal: 'Forward reference parsers should be compressed away before parsing'
-)
-
-) : (
-)
+)) : ()
 class ParserContext over: s = (|
 	content <String> = s.
-	position <Integer> ::= 0.
+	public position <Integer> ::= 0.
 |)
 ('as yet unclassified'
-atEnd = (
+public atEnd = (
 	^position >= content size
 )
-
-next = (
+public next = (
 	position: position + 1.
 	^content at: position
-)
-
-) : (
-)
+)) : ()
 class SequencingParser subparsers: ps = CombinatorialParser (|
 	subparsers <List[CombinatorialParser]> ::= ps.
 |)
 ('as yet unclassified'
-, p = (
+public , p = (
 	^SequencingParser subparsers: (subparsers copyWith: p)
 )
-
-compress = (
+public compress = (
 	compressed ifTrue: [^self].
 	compressed: true.
 	subparsers:: subparsers collect: [:e | e compress].
 	^self
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	^subparsers collect: [:p | p parseWithContext: ctxt ifError: onError]
 )
-
-wrapper: block = (
+public wrapper: block = (
 	^WrappingParser wrap: self with: [:results | block valueWithArguments: results]
-)
-
-) : (
-)
+)) : ()
 class SimpleExpressionGrammar = CombinatorialParser (|
-start = ForwardReferenceParser new.
+public start = ForwardReferenceParser new.
 exp = ForwardReferenceParser new.
 e1 = ForwardReferenceParser new.
 e2 = ForwardReferenceParser new.
@@ -213,20 +174,18 @@ times bind: (char: $*).
 digit bind: (charBetween: $0 and: $9).
 lparen bind: (char: $().
 rparen bind: (char: $)))
-() : (
-)
+() : ()
 class StarParser repeat: p = CombinatorialParser (|
 subparser <CombinatorialParser> ::= p.
 |)
 ('as yet unclassified'
-compress = (
+public compress = (
 	compressed ifTrue: [^self].
 	compressed: true.
 	subparser:: subparser compress.
 	^self
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	| results = List new. |
 	[
 		| pos |
@@ -234,41 +193,31 @@ parseWithContext: ctxt ifError: onError = (
 		results add: (subparser parseWithContext: ctxt ifError: [ctxt position: pos. ^results]).
 	] repeat.
 )
-
-wrapper: block = (
+public wrapper: block = (
 	^WrappingParser wrap: self with: [:results | block valueWithArguments: results]
-)
-
-) : (
-)
+)) : ()
 class WrappingParser wrap: p with: t = CombinatorialParser (|
 subparser <CombintorialParser> ::= p.
 transform <Block> = t.
 |)
 ('as yet unclassified'
-compress = (
+public compress = (
 	compressed ifTrue: [^self].
 	compressed: true.
 	subparser:: subparser compress.
 	^self
 )
-
-parseWithContext: ctxt ifError: onError = (
+public parseWithContext: ctxt ifError: onError = (
 	^transform value: (subparser parseWithContext: ctxt ifError: onError)
-)
-
-) : (
-)'as yet unclassified'
-bench = (
+)) : ()'as yet unclassified'
+public bench = (
 	parser parseWithContext: (ParserContext over: theExpression) ifError: [parseFailed].
 )
-
 nextRandom = (
 	seed:: seed * 16rDEAD + 16rC0DE.
 	seed:: seed bitAnd: 16rFFF.
 	^seed
 )
-
 randomExpression: depth = (
 	| m |
 	depth < 1 ifTrue: [^(nextRandom rem: 10) printString].
@@ -277,7 +226,4 @@ randomExpression: depth = (
 	m = 1 ifTrue: [^(randomExpression: depth-1),'*',(randomExpression: depth-1)].
 	m = 2 ifTrue: [^'(',(randomExpression: depth-1),')'].
 	halt.
-)
-
-) : (
-)
+)) : ()
